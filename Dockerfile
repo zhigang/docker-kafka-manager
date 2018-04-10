@@ -1,4 +1,4 @@
-FROM java:8-jdk AS builder
+FROM openjdk:8-jdk AS builder
 
 ENV KM_VERSION="1.3.3.17"
 
@@ -12,7 +12,7 @@ RUN cd /tmp \
     && mv /opt/kafka-manager-${KM_VERSION} /opt/kafka-manager \
     && rm -rf /tmp/* /root/.sbt /root/.ivy2
 
-FROM java:8-jre
+FROM openjdk:8-jre-alpine
 LABEL maintainer="zhigang52110@sina.com"
 
 ENV KM_CONFIGFILE="conf/application.conf"
