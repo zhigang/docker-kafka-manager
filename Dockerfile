@@ -1,24 +1,16 @@
-FROM java:8-jdk AS builder
+FROM openjdk:11.0.14.1-jre
 
-ENV KM_VERSION="1.3.3.17"
-
-RUN cd /tmp \
-    && curl -L https://github.com/yahoo/kafka-manager/archive/${KM_VERSION}.tar.gz -o kafka-manager-${KM_VERSION}.tar.gz \
-    && tar zxf kafka-manager-${KM_VERSION}.tar.gz \
-    && cd kafka-manager-${KM_VERSION} \
-    && echo 'scalacOptions ++= Seq("-Xmax-classfile-name", "200")' >> build.sbt \
-    && ./sbt clean dist \
-    && unzip -d /opt ./target/universal/kafka-manager-${KM_VERSION}.zip \
-    && mv /opt/kafka-manager-${KM_VERSION} /opt/kafka-manager
-
-FROM java:8-jre-alpine
 LABEL maintainer="zhigang52110@sina.com"
 
-ENV KM_CONFIGFILE="conf/application.conf"
+ENV CMAK_VERSION="3.0.0.2"
 
-COPY --from=builder /opt/kafka-manager /opt/kafka-manager
-WORKDIR /opt/kafka-manager
+RUN curl -L https://github.com/yahoo/CMAK/releases/download/${CMAK_VERSION}/cmak-${CMAK_VERSION}.zip -o cmak-${CMAK_VERSION}.zip \
+    && unzip cmak-${CMAK_VERSION}.zip \
+    && mv cmak-${CMAK_VERSION} cmak \
+    && rm -rf cmak-${CMAK_VERSION}.zip
+
+WORKDIR /cmak
 
 EXPOSE 9000
 
-ENTRYPOINT ["./bin/kafka-manager","-Dconfig.file=${KM_CONFIGFILE}","${KM_ARGS}"]
+CMD ["bin/cmak"]
