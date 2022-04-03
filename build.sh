@@ -2,23 +2,11 @@
 
 export VERSION=${1:latest}
 
-echo -e ">>>>>>>> docker build linux/amd64 <<<<<<<<"
-docker buildx build --platform linux/amd64 -t siriuszg/cmak:${VERSION}-amd64 .
-
-echo -e ">>>>>>>> docker build linux/arm64 <<<<<<<<"
-docker buildx build --platform linux/arm64 -t siriuszg/cmak:${VERSION}-arm64 .
-
-# echo -e ">>>>>>>> docker push <<<<<<<<"
-docker push siriuszg/cmak:${VERSION}-amd64
-docker push siriuszg/cmak:${VERSION}-arm64
-
-echo -e ">>>>>>>> docker manifest create <<<<<<<<"
-docker manifest create siriuszg/cmak:${VERSION} \
-    siriuszg/cmak:${VERSION}-amd64 \
-    siriuszg/cmak:${VERSION}-arm64
-
-echo -e ">>>>>>>> docker manifest push <<<<<<<<"
-docker manifest push siriuszg/cmak:${VERSION}
-
-# echo -e ">>>>>>>> docker manifest annotate <<<<<<<<"
-# docker manifest annotate siriuszg/cmak:${VERSION} siriuszg/cmak:${VERSION}-arm64 --arch arm64
+echo -e "Creating a new builder instance"
+docker buildx create --name mybuilder-${VERSION} --use
+echo -e "Booting builder"
+docker buildx inspect --bootstrap --builder mybuilder-${VERSION}
+echo -e "Docker build and push"
+docker buildx build --platform linux/amd64,linux/arm64 --tag siriuszg/cmak:${VERSION} --push .
+echo -e "Removing builder"
+docker buildx rm mybuilder-${VERSION}
